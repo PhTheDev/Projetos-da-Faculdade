@@ -16,37 +16,42 @@
     
 
     short menuCliente() {
-    short opcaomenucliente;
+        short opcaomenucliente;
 
-    do {
-        printf("\n\n------------------------MENU-CLIENTE-------------------------\n");
-        printf("\n1 - Incluir Cliente\n");
-        printf("2 - Excluir Cliente\n");
-        printf("3 - Consultar Cliente\n");
-        printf("4 - Voltar ao Menu Principal\n\n");
-        printf("-------------------------------------------------------------\n");
-        printf("\n\nDigite a opcao desejada: ");
-        scanf("%hd", &opcaomenucliente);  // Use %hd para short
-        switch (opcaomenucliente) {
-            case 1:
-                incluirCliente();
-                break;
-            case 2:
-                //excluirCliente();
-                break;
-            case 3:
-                //consultar cliente
-                break;
-            case 4:
-                return opcaomenucliente; // Retorna a opção para indicar a volta ao menu principal
-            default:
-                printf("Opcao invalida tente novamente!");
-                break;
-        }
-    } while (opcaomenucliente != 4);
+        do {
+            printf("\n\n------------------------MENU-CLIENTE-------------------------\n");
+            printf("\n1 - Incluir Cliente\n");
+            printf("2 - Excluir Cliente\n");
+            printf("3 - Consultar Cliente\n");
+            printf("4 - Listar Clientes\n");
+            printf("5 - Voltar ao Menu Principal\n\n");
+            printf("-------------------------------------------------------------\n");
+            printf("\n\nDigite a opcao desejada: ");
+            scanf("%hd", &opcaomenucliente);  // Use %hd para short
+            switch (opcaomenucliente) {
+                case 1:
+                    incluirCliente();
+                    break;
+                case 2:
+                    excluirCliente();
+                    break;
+                case 3:
+                    consultarCliente();
+                    break;
+                case 4:
+                    listarClientes();
+                    break;
+                case 5:
+                    return opcaomenucliente; // Retorna a opção para indicar a volta ao menu principal
+                default:
+                    printf("Opcao invalida tente novamente!");
+                    break;
+            }
+        } while (opcaomenucliente != 5);
 
-    return opcaomenucliente; // Isso não deve ser alcançado, mas para evitar warnings
-}
+        return opcaomenucliente;
+    }
+
     
     bool CPF(char cpf[12]) {
     int icpf[12];
@@ -164,6 +169,16 @@
             return;
         }
 
+        // Cliente encontrado, solicita confirmação
+        printf("Cliente encontrado. Deseja realmente excluir? (S/N): ");
+        char resposta;
+        scanf(" %c", &resposta);
+
+        if (resposta != 'S' && resposta != 's') {
+            printf("Operacao de exclusao cancelada.\n");
+            return;
+        }
+
         FILE *arqCliente = fopen("cliente.csv", "r");
         FILE *tempFile = fopen("temp.csv", "w");
 
@@ -173,7 +188,7 @@
         }
 
         char linha[256];
-        while (fgets(linha, sizeof(linha), arqCliente) != EOF) {
+        while (fgets(linha, sizeof(linha), arqCliente) != NULL) {
             if (strstr(linha, cpf) == NULL) {
                 fputs(linha, tempFile);
             }
@@ -182,11 +197,83 @@
         fclose(arqCliente);
         fclose(tempFile);
 
-        remove("cliente.csv");
-        rename("temp.csv", "cliente.csv");
+        // Feche o arquivo antes de tentar removê-lo
+        arqCliente = NULL;  // Defina como NULL para evitar fechá-lo novamente
+        if (remove("cliente.csv") != 0) {
+            perror("Erro ao excluir o arquivo cliente.csv");
+            return;
+        }
+
+        if (rename("temp.csv", "cliente.csv") != 0) {
+            perror("Erro ao renomear o arquivo temp.csv");
+            return;
+        }
 
         printf("Cliente excluido com sucesso.\n");
     }
-    
+
+    void consultarCliente() {
+        char cpf[12];
+
+        printf("Digite o CPF do cliente a ser consultado:\n");
+        scanf("%s", cpf);
+
+        if (!verificarCliente(cpf)) {
+            printf("Cliente nao encontrado.\n");
+            return;
+        }
+
+        // Abrir o arquivo cliente.csv para leitura
+        FILE *arqCliente = fopen("cliente.csv", "r");
+
+        if (arqCliente == NULL) {
+            printf("Erro ao abrir o arquivo cliente.csv");
+            return;
+        }
+
+        char linha[256];
+        while (fgets(linha, sizeof(linha), arqCliente) != NULL) {
+            // Verifique se o CPF existe na linha
+            if (strstr(linha, cpf) != NULL) {
+                // Exiba as informações do cliente
+                printf("\nInformacoes do Cliente:\n");
+                printf("CPF: %s\n", strtok(linha, "-"));
+                printf("Nome: %s\n", strtok(NULL, "-"));
+                printf("Numero Celular: %s\n", strtok(NULL, "-"));
+                printf("Numero Telefone: %s\n", strtok(NULL, "-"));
+                printf("Email: %s\n", strtok(NULL, "-"));
+                break;
+            }
+        }
+
+    fclose(arqCliente);
+}
+
+    void listarClientes() {
+        FILE *arqCliente = fopen("cliente.csv", "r");
+
+        if (arqCliente == NULL) {
+            printf("Erro ao abrir o arquivo cliente.csv\n");
+            return;
+        }
+
+        printf("\nLista de Clientes:\n");
+
+        char linha[256];
+        while (fgets(linha, sizeof(linha), arqCliente) != NULL) {
+            // Tokeniza a linha usando o caractere '-' como delimitador
+            char *cpf = strtok(linha, "-");
+            char *nome = strtok(NULL, "-");
+            char *numCelular = strtok(NULL, "-");
+            char *numTelefone = strtok(NULL, "-");
+            char *email = strtok(NULL, "-");
+
+            // Imprime todas as informações em uma linha
+            printf("CPF: %s, Nome: %s, Num. Celular: %s, Num. Telefone: %s, Email: %s\n",
+                cpf, nome, numCelular, numTelefone, email);
+        }
+
+        fclose(arqCliente);
+    }   
 
 #endif
