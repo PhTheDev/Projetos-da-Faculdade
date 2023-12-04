@@ -2,6 +2,8 @@
 #define CLIENTE_H_INCLUDED
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
     typedef struct cliente{
         char cpf[11];
@@ -13,39 +15,38 @@
     }Cliente;
     
 
-    short menuCliente(){
+    short menuCliente() {
+    short opcaomenucliente;
 
-        short opcaomenucliente;
+    do {
+        printf("\n\n------------------------MENU-CLIENTE-------------------------\n");
+        printf("\n1 - Incluir Cliente\n");
+        printf("2 - Excluir Cliente\n");
+        printf("3 - Consultar Cliente\n");
+        printf("4 - Voltar ao Menu Principal\n\n");
+        printf("-------------------------------------------------------------\n");
+        printf("\n\nDigite a opcao desejada: ");
+        scanf("%hd", &opcaomenucliente);  // Use %hd para short
+        switch (opcaomenucliente) {
+            case 1:
+                incluirCliente();
+                break;
+            case 2:
+                //excluirCliente();
+                break;
+            case 3:
+                //consultar cliente
+                break;
+            case 4:
+                return opcaomenucliente; // Retorna a opção para indicar a volta ao menu principal
+            default:
+                printf("Opcao invalida tente novamente!");
+                break;
+        }
+    } while (opcaomenucliente != 4);
 
-        do{
-            printf("\n\n------------------------MENU-CLIENTE-------------------------\n");
-            printf("\n1 - Incluir Cliente\n");
-            printf("2 - Excluir Cliente\n");
-            printf("3 - Consultar Cliente\n");
-            printf("4 - Voltar ao Menu Principal\n\n");
-            printf("-------------------------------------------------------------\n");
-            printf("\n\nDigite a opcao desejada: ");
-            scanf("%d",&opcaomenucliente);
-            switch(opcaomenucliente){
-                case 1:
-                    incluirCliente();
-                    break;
-                case 2:
-                    //excluirCliente();
-                    break;
-                case 3:
-                    //consultar cliente
-                    break;
-                case 4:
-                    break; //Volta ao menu principal!
-                default:
-                    printf("Opcao invalida tente novamente!");
-                    break;    
-            
-            }
-        }while(opcaomenucliente != 4);
-    }
-
+    return opcaomenucliente; // Isso não deve ser alcançado, mas para evitar warnings
+}
     
     bool CPF(char cpf[12]) {
     int icpf[12];
@@ -151,7 +152,7 @@
         fclose(arqCliente);
         printf("Cliente adicionado com sucesso.\n");
     }
-    /*
+    
     void excluirCliente() {
         char cpf[12];
 
@@ -172,7 +173,7 @@
         }
 
         char linha[256];
-        while (fgets(linha, sizeof(linha), arqCliente) != NULL) {
+        while (fgets(linha, sizeof(linha), arqCliente) != EOF) {
             if (strstr(linha, cpf) == NULL) {
                 fputs(linha, tempFile);
             }
@@ -186,6 +187,6 @@
 
         printf("Cliente excluido com sucesso.\n");
     }
-    */
+    
 
 #endif
